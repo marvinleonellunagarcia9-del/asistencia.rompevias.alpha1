@@ -1,0 +1,492 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2685.4">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px Menlo; color: #3874c0; -webkit-text-stroke: #3874c0; background-color: #121313}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 14.0px Menlo; color: #3874c0; -webkit-text-stroke: #3874c0; background-color: #121313; min-height: 16.0px}
+    span.s1 {font-kerning: none}
+  </style>
+</head>
+<body>
+<p class="p1"><span class="s1">&lt;!DOCTYPE html&gt;</span></p>
+<p class="p1"><span class="s1">&lt;html lang="es"&gt;</span></p>
+<p class="p1"><span class="s1">&lt;head&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;title&gt;Control de Asistencia&lt;/title&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;!-- Tailwind CSS para el diseño --&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script src="https://cdn.tailwindcss.com"&gt;&lt;/script&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;!-- React y ReactDOM --&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"&gt;&lt;/script&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"&gt;&lt;/script&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;!-- Babel para compilar JSX en el navegador --&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script src="https://unpkg.com/@babel/standalone/babel.min.js"&gt;&lt;/script&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;style&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>/* Ajustes para dispositivos móviles */</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>body { -webkit-tap-highlight-color: transparent; overscroll-behavior-y: none; }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>@supports (padding-bottom: env(safe-area-inset-bottom)) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">          </span>.pb-safe { padding-bottom: calc(0.5rem + env(safe-area-inset-bottom)); }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/head&gt;</span></p>
+<p class="p1"><span class="s1">&lt;body class="bg-slate-50 text-slate-900 font-sans"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;div id="root"&gt;&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;script type="text/babel" data-type="module"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const { useState, useEffect } = React;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// --- CONFIGURACIÓN DE BASE DE DATOS ---</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Si publicas esto en GitHub, la app funcionará en MODO LOCAL por defecto.</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Si quieres que varias personas sincronicen datos en la nube, reemplaza "null" con la configuración de tu propio proyecto Firebase.</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const MI_PROPIA_BASE_DE_DATOS = null;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// Ejemplo: const MI_PROPIA_BASE_DE_DATOS = { apiKey: "AIza...", projectId: "mi-app", ... };</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>let app, auth, db, appId;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>try {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>if (MI_PROPIA_BASE_DE_DATOS) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>app = initializeApp(MI_PROPIA_BASE_DE_DATOS);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>auth = getAuth(app);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>db = getFirestore(app);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>appId = 'mi-app-propia';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>} else if (typeof __firebase_config !== 'undefined') {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const firebaseConfig = JSON.parse(__firebase_config);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>app = initializeApp(firebaseConfig);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>auth = getAuth(app);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>db = getFirestore(app);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>} catch (error) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>console.error("No hay nube disponible, operando en modo local.");</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>// --- ICONOS SVG ---</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const IconUsers = ({size=24, className=""}) =&gt; &lt;svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}&gt;&lt;path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"&gt;&lt;/path&gt;&lt;circle cx="9" cy="7" r="4"&gt;&lt;/circle&gt;&lt;path d="M22 21v-2a4 4 0 0 0-3-3.87"&gt;&lt;/path&gt;&lt;path d="M16 3.13a4 4 0 0 1 0 7.75"&gt;&lt;/path&gt;&lt;/svg&gt;;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const IconCalendar = ({size=24, className=""}) =&gt; &lt;svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}&gt;&lt;rect width="18" height="18" x="3" y="4" rx="2" ry="2"&gt;&lt;/rect&gt;&lt;line x1="16" x2="16" y1="2" y2="6"&gt;&lt;/line&gt;&lt;line x1="8" x2="8" y1="2" y2="6"&gt;&lt;/line&gt;&lt;line x1="3" x2="21" y1="10" y2="10"&gt;&lt;/line&gt;&lt;/svg&gt;;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const IconCheckSquare = ({size=24, className=""}) =&gt; &lt;svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}&gt;&lt;polyline points="9 11 12 14 22 4"&gt;&lt;/polyline&gt;&lt;path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"&gt;&lt;/path&gt;&lt;/svg&gt;;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const IconFileText = ({size=24, className=""}) =&gt; &lt;svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}&gt;&lt;path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"&gt;&lt;/path&gt;&lt;polyline points="14 2 14 8 20 8"&gt;&lt;/polyline&gt;&lt;line x1="16" x2="8" y1="13" y2="13"&gt;&lt;/line&gt;&lt;line x1="16" x2="8" y1="17" y2="17"&gt;&lt;/line&gt;&lt;line x1="10" x2="8" y1="9" y2="9"&gt;&lt;/line&gt;&lt;/svg&gt;;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const IconPlus = ({size=24, className=""}) =&gt; &lt;svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}&gt;&lt;line x1="12" x2="12" y1="5" y2="19"&gt;&lt;/line&gt;&lt;line x1="5" x2="19" y1="12" y2="12"&gt;&lt;/line&gt;&lt;/svg&gt;;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const IconTrash2 = ({size=24, className=""}) =&gt; &lt;svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}&gt;&lt;polyline points="3 6 5 6 21 6"&gt;&lt;/polyline&gt;&lt;path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"&gt;&lt;/path&gt;&lt;line x1="10" x2="10" y1="11" y2="17"&gt;&lt;/line&gt;&lt;line x1="14" x2="14" y1="11" y2="17"&gt;&lt;/line&gt;&lt;/svg&gt;;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const IconCheckCircle = ({size=24, className=""}) =&gt; &lt;svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}&gt;&lt;path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"&gt;&lt;/path&gt;&lt;polyline points="22 4 12 14.01 9 11.01"&gt;&lt;/polyline&gt;&lt;/svg&gt;;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const IconXCircle = ({size=24, className=""}) =&gt; &lt;svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}&gt;&lt;circle cx="12" cy="12" r="10"&gt;&lt;/circle&gt;&lt;line x1="15" x2="9" y1="9" y2="15"&gt;&lt;/line&gt;&lt;line x1="9" x2="15" y1="9" y2="15"&gt;&lt;/line&gt;&lt;/svg&gt;;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const IconAlertCircle = ({size=24, className=""}) =&gt; &lt;svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}&gt;&lt;circle cx="12" cy="12" r="10"&gt;&lt;/circle&gt;&lt;line x1="12" x2="12" y1="8" y2="12"&gt;&lt;/line&gt;&lt;line x1="12" x2="12.01" y1="16" y2="16"&gt;&lt;/line&gt;&lt;/svg&gt;;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const IconUser = ({size=24, className=""}) =&gt; &lt;svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}&gt;&lt;path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"&gt;&lt;/path&gt;&lt;circle cx="12" cy="7" r="4"&gt;&lt;/circle&gt;&lt;/svg&gt;;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>function App() {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>// --- ESTADOS (Híbrido: LocalStorage por defecto, Firebase si hay conexión) ---</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const [user, setUser] = useState(null);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>// Inicializar con LocalStorage para que la app funcione inmediatamente en GitHub Pages</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const [users, setUsers] = useState(() =&gt; JSON.parse(localStorage.getItem('local_users')) || []);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const [activities, setActivities] = useState(() =&gt; JSON.parse(localStorage.getItem('local_activities')) || []);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const [attendance, setAttendance] = useState(() =&gt; JSON.parse(localStorage.getItem('local_attendance')) || {});</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const [loadingDb, setLoadingDb] = useState(!!db); // Solo carga si hay DB configurada</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const [isOnline, setIsOnline] = useState(false);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">            </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const [activeTab, setActiveTab] = useState('users');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const [notification, setNotification] = useState(null);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>// --- FORMULARIOS ---</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const [userForm, setUserForm] = useState({ fullName: '', age: '', idNumber: '', address: '', phone: '', email: '', photo: null });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const [activityForm, setActivityForm] = useState({ name: '', date: '' });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const [selectedActivityForAttendance, setSelectedActivityForAttendance] = useState('');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const [selectedActivityForReport, setSelectedActivityForReport] = useState('');</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>// Sincronización LocalStorage constante</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>useEffect(() =&gt; { if (!isOnline) localStorage.setItem('local_users', JSON.stringify(users)); }, [users, isOnline]);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>useEffect(() =&gt; { if (!isOnline) localStorage.setItem('local_activities', JSON.stringify(activities)); }, [activities, isOnline]);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>useEffect(() =&gt; { if (!isOnline) localStorage.setItem('local_attendance', JSON.stringify(attendance)); }, [attendance, isOnline]);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>// --- FIREBASE EFECTOS ---</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>useEffect(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (!auth) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>setLoadingDb(false);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>return;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const initAuth = async () =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>try {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>if (typeof __initial_auth_token !== 'undefined' &amp;&amp; __initial_auth_token) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>await signInWithCustomToken(auth, __initial_auth_token);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>} else {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>await signInAnonymously(auth);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>} catch (err) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>console.error("Error de Autenticación:", err);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>initAuth();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const unsubscribe = onAuthStateChanged(auth, setUser);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>return () =&gt; unsubscribe();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}, []);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>useEffect(() =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (!user || !db) return;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>setIsOnline(true);</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const usersRef = collection(db, 'artifacts', appId, 'public', 'data', 'users');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const activitiesRef = collection(db, 'artifacts', appId, 'public', 'data', 'activities');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const attendanceRef = collection(db, 'artifacts', appId, 'public', 'data', 'attendance');</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const unsubUsers = onSnapshot(usersRef, (snap) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>setUsers(snap.docs.map(d =&gt; ({ ...d.data(), id: d.id })));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>setLoadingDb(false);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}, console.error);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const unsubActivities = onSnapshot(activitiesRef, (snap) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>setActivities(snap.docs.map(d =&gt; ({ ...d.data(), id: d.id })));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}, console.error);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const unsubAttendance = onSnapshot(attendanceRef, (snap) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>const attData = {};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>snap.docs.forEach(d =&gt; { attData[d.id] = d.data(); });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>setAttendance(attData);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}, console.error);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>return () =&gt; { unsubUsers(); unsubActivities(); unsubAttendance(); };</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>}, [user]);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>// --- FUNCIONES AUXILIARES ---</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const showNotification = (msg, type = 'success') =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>setNotification({ msg, type });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>setTimeout(() =&gt; setNotification(null), 3000);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const generateId = () =&gt; Math.random().toString(36).substr(2, 9);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const handlePhotoChange = (e) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const file = e.target.files[0];</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (file) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>if (file.size &gt; 1000000) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>showNotification('La imagen es muy grande (Máx 1MB)', 'error');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>return;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>const reader = new FileReader();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>reader.onloadend = () =&gt; setUserForm(prev =&gt; ({ ...prev, photo: reader.result }));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>reader.readAsDataURL(file);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>// --- ACCIONES (Guardan en DB si está activa, si no en Memoria Local) ---</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const handleAddUser = async (e) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>e.preventDefault();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (!userForm.fullName || !userForm.idNumber) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>showNotification('El nombre y la identificación son obligatorios', 'error');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>return;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const id = generateId();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const newUser = { ...userForm, id };</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (isOnline &amp;&amp; db) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', id), newUser);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>} else {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>setUsers(prev =&gt; [...prev, newUser]);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>setUserForm({ fullName: '', age: '', idNumber: '', address: '', phone: '', email: '', photo: null });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const photoInput = document.getElementById('photoInput');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (photoInput) photoInput.value = '';</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>showNotification('Usuario registrado exitosamente');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const handleDeleteUser = async (id) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (confirm('¿Seguro que deseas eliminar este usuario?')) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>if (isOnline &amp;&amp; db) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'users', id));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>} else {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>setUsers(prev =&gt; prev.filter(u =&gt; u.id !== id));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>showNotification('Usuario eliminado');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const handleAddActivity = async (e) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>e.preventDefault();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (!activityForm.name || !activityForm.date) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>showNotification('El nombre y la fecha son obligatorios', 'error');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>return;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const id = generateId();</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const newActivity = { ...activityForm, id };</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (isOnline &amp;&amp; db) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'activities', id), newActivity);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>} else {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>setActivities(prev =&gt; [...prev, newActivity]);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>setActivityForm({ name: '', date: '' });</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>showNotification('Actividad programada');</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const toggleAttendance = async (activityId, userId) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const currentStatus = attendance[activityId]?.[userId] || false;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (isOnline &amp;&amp; db) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>await setDoc(</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>doc(db, 'artifacts', appId, 'public', 'data', 'attendance', activityId),</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>{ [userId]: !currentStatus },</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>{ merge: true }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>} else {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>setAttendance(prev =&gt; ({</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>...prev,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>[activityId]: { ...(prev[activityId] || {}), [userId]: !currentStatus }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>}));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const markAll = async (activityId, status) =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const newStatus = {};</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>users.forEach(u =&gt; { newStatus[u.id] = status; });</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (isOnline &amp;&amp; db) {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>await setDoc(</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>doc(db, 'artifacts', appId, 'public', 'data', 'attendance', activityId),</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>newStatus,</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>{ merge: true }</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>} else {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>setAttendance(prev =&gt; ({ ...prev, [activityId]: newStatus }));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>// --- VISTAS ---</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const renderNotification = () =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (!notification) return null;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;div className={`fixed top-4 left-1/2 transform -translate-x-1/2 p-4 rounded-lg shadow-lg z-50 flex items-center space-x-2 w-11/12 max-w-md ${notification.type === 'error' ? 'bg-red-100 text-red-800 border border-red-200' : 'bg-green-100 text-green-800 border border-green-200'}`}&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>{notification.type === 'error' ? &lt;IconAlertCircle size={20} /&gt; : &lt;IconCheckCircle size={20} /&gt;}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;span className="font-medium"&gt;{notification.msg}&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const renderUsersTab = () =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div className="space-y-6 pb-20"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;h2 className="text-xl font-bold text-slate-800 mb-4"&gt;Registrar Usuario&lt;/h2&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;form onSubmit={handleAddUser} className="space-y-4"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;label className="block text-sm font-medium text-slate-600 mb-1"&gt;Nombre Completo *&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;input type="text" value={userForm.fullName} onChange={e =&gt; setUserForm({...userForm, fullName: e.target.value})} className="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej. Juan Pérez" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div className="grid grid-cols-2 gap-4"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;label className="block text-sm font-medium text-slate-600 mb-1"&gt;Edad&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;input type="number" value={userForm.age} onChange={e =&gt; setUserForm({...userForm, age: e.target.value})} className="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej. 25" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;label className="block text-sm font-medium text-slate-600 mb-1"&gt;Identificación *&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;input type="text" value={userForm.idNumber} onChange={e =&gt; setUserForm({...userForm, idNumber: e.target.value})} className="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="DPI / Cédula" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;label className="block text-sm font-medium text-slate-600 mb-1"&gt;Dirección&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;textarea value={userForm.address} onChange={e =&gt; setUserForm({...userForm, address: e.target.value})} className="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" rows="2"&gt;&lt;/textarea&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div className="grid grid-cols-1 sm:grid-cols-2 gap-4"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;label className="block text-sm font-medium text-slate-600 mb-1"&gt;Teléfono&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;input type="tel" value={userForm.phone} onChange={e =&gt; setUserForm({...userForm, phone: e.target.value})} className="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" placeholder="Ej. 5555-5555" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;label className="block text-sm font-medium text-slate-600 mb-1"&gt;Correo Electrónico&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;input type="email" value={userForm.email} onChange={e =&gt; setUserForm({...userForm, email: e.target.value})} className="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;label className="block text-sm font-medium text-slate-600 mb-1"&gt;Foto (Opcional - Máx 1MB)&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;input type="file" accept="image/*" onChange={handlePhotoChange} id="photoInput" className="w-full p-2 border border-slate-200 rounded-lg text-sm bg-slate-50 outline-none" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;button type="submit" className="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold flex justify-center items-center space-x-2"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;IconPlus size={20} /&gt; &lt;span&gt;Guardar Usuario&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/form&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div className="p-4 bg-slate-50 border-b border-slate-100"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;h3 className="font-bold text-slate-700"&gt;Usuarios en Sistema ({users.length})&lt;/h3&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div className="divide-y divide-slate-100"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>{users.length === 0 ? &lt;p className="p-6 text-center text-slate-400"&gt;No hay usuarios registrados aún.&lt;/p&gt; : users.map(user =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div key={user.id} className="p-4 flex justify-between items-center"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;div className="flex items-center space-x-4"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                        </span>{user.photo ? &lt;img src={user.photo} className="w-12 h-12 rounded-full object-cover border border-slate-200" /&gt; : &lt;div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center text-slate-500"&gt;&lt;IconUser size={24} /&gt;&lt;/div&gt;}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                            </span>&lt;p className="font-semibold text-slate-800"&gt;{user.fullName}&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                            </span>&lt;p className="text-sm text-slate-500"&gt;ID: {user.idNumber} | Tel: {user.phone || 'N/A'}&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;button onClick={() =&gt; handleDeleteUser(user.id)} className="text-red-400 p-2 hover:text-red-600 transition-colors"&gt;&lt;IconTrash2 size={20} /&gt;&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>))}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const renderActivitiesTab = () =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div className="space-y-6 pb-20"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;h2 className="text-xl font-bold text-slate-800 mb-4"&gt;Programar Actividad&lt;/h2&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;form onSubmit={handleAddActivity} className="space-y-4"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;label className="block text-sm font-medium text-slate-600 mb-1"&gt;Nombre *&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;input type="text" value={activityForm.name} onChange={e =&gt; setActivityForm({...activityForm, name: e.target.value})} className="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;label className="block text-sm font-medium text-slate-600 mb-1"&gt;Fecha *&lt;/label&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;input type="date" value={activityForm.date} onChange={e =&gt; setActivityForm({...activityForm, date: e.target.value})} className="w-full p-3 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500" /&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;button type="submit" className="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold flex justify-center items-center space-x-2"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;IconPlus size={20} /&gt; &lt;span&gt;Crear Actividad&lt;/span&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/form&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div className="p-4 bg-slate-50 border-b border-slate-100"&gt;&lt;h3 className="font-bold text-slate-700"&gt;Actividades ({activities.length})&lt;/h3&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div className="divide-y divide-slate-100"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>{activities.length === 0 ? &lt;p className="p-6 text-center text-slate-400"&gt;No hay actividades.&lt;/p&gt; : activities.map(act =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div key={act.id} className="p-4"&gt;&lt;p className="font-semibold text-slate-800"&gt;{act.name}&lt;/p&gt;&lt;p className="text-sm text-slate-500"&gt;{act.date}&lt;/p&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>))}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const renderAttendanceTab = () =&gt; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div className="space-y-6 pb-20"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;h2 className="text-xl font-bold text-slate-800 mb-4"&gt;Tomar Asistencia&lt;/h2&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;select value={selectedActivityForAttendance} onChange={e =&gt; setSelectedActivityForAttendance(e.target.value)} className="w-full p-3 border border-slate-200 rounded-lg outline-none bg-white focus:ring-2 focus:ring-blue-500"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;option value=""&gt;-- Selecciona una actividad --&lt;/option&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>{activities.map(act =&gt; &lt;option key={act.id} value={act.id}&gt;{act.name} ({act.date})&lt;/option&gt;)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/select&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;p className="text-xs text-slate-400 mt-2 flex items-center"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>{isOnline ? &lt;&gt;&lt;IconCheckCircle size={14} className="mr-1 text-green-500"/&gt; Sincronizado en la nube&lt;/&gt; : &lt;&gt;&lt;IconAlertCircle size={14} className="mr-1 text-yellow-500"/&gt; Guardando localmente&lt;/&gt;}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/p&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>{selectedActivityForAttendance &amp;&amp; users.length &gt; 0 &amp;&amp; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div className="p-4 bg-slate-50 border-b border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;h3 className="font-bold text-slate-700"&gt;Lista de Usuarios&lt;/h3&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div className="flex space-x-2 w-full sm:w-auto"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;button onClick={() =&gt; markAll(selectedActivityForAttendance, true)} className="flex-1 text-xs bg-green-100 text-green-700 px-3 py-2 rounded-lg font-semibold"&gt;Marcar Todos&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;button onClick={() =&gt; markAll(selectedActivityForAttendance, false)} className="flex-1 text-xs bg-red-100 text-red-700 px-3 py-2 rounded-lg font-semibold"&gt;Desmarcar Todos&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;div className="divide-y divide-slate-100"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>{users.map(user =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                    </span>const isPresent = attendance[selectedActivityForAttendance]?.[user.id] || false;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                    </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;div key={user.id} className="p-4 flex justify-between items-center cursor-pointer hover:bg-slate-50 transition-colors" onClick={() =&gt; toggleAttendance(selectedActivityForAttendance, user.id)}&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                            </span>&lt;div className="flex items-center space-x-3"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                                </span>{user.photo ? &lt;img src={user.photo} className="w-10 h-10 rounded-full object-cover" /&gt; : &lt;div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-500"&gt;&lt;IconUser size={20} /&gt;&lt;/div&gt;}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                                </span>&lt;div&gt;&lt;p className="font-semibold text-slate-800"&gt;{user.fullName}&lt;/p&gt;&lt;p className="text-sm text-slate-500"&gt;{user.idNumber}&lt;/p&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                            </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                                </span>{isPresent ? &lt;div className="flex items-center text-green-600 bg-green-50 px-3 py-1 rounded-full border border-green-200 shadow-sm"&gt;&lt;IconCheckCircle size={20} className="mr-1" /&gt;&lt;span className="text-sm font-semibold"&gt;Presente&lt;/span&gt;&lt;/div&gt;<span class="Apple-converted-space"> </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                                </span>: &lt;div className="flex items-center text-slate-500 bg-white px-3 py-1 rounded-full border border-slate-300 shadow-sm"&gt;&lt;IconXCircle size={20} className="mr-1" /&gt;&lt;span className="text-sm font-semibold"&gt;Ausente&lt;/span&gt;&lt;/div&gt;}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                    </span>);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>})}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>const renderReportsTab = () =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>const act = activities.find(a =&gt; a.id === selectedActivityForReport);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>let presentCount = 0, absentCount = 0;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>if (act) users.forEach(u =&gt; attendance[act.id]?.[u.id] ? presentCount++ : absentCount++);</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;div className="space-y-6 pb-20"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;h2 className="text-xl font-bold text-slate-800 mb-4"&gt;Reporte Global&lt;/h2&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;select value={selectedActivityForReport} onChange={e =&gt; setSelectedActivityForReport(e.target.value)} className="w-full p-3 border border-slate-200 rounded-lg outline-none bg-white focus:ring-2 focus:ring-blue-500"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;option value=""&gt;-- Selecciona una actividad --&lt;/option&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>{activities.map(a =&gt; &lt;option key={a.id} value={a.id}&gt;{a.name} ({a.date})&lt;/option&gt;)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/select&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>{act &amp;&amp; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div className="grid grid-cols-2 gap-4"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;div className="bg-green-50 p-4 rounded-xl text-center border border-green-100 shadow-sm"&gt;&lt;p className="text-sm text-green-600 font-semibold"&gt;Presentes&lt;/p&gt;&lt;p className="text-3xl font-bold text-green-700"&gt;{presentCount}&lt;/p&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;div className="bg-red-50 p-4 rounded-xl text-center border border-red-100 shadow-sm"&gt;&lt;p className="text-sm text-red-600 font-semibold"&gt;Ausentes&lt;/p&gt;&lt;p className="text-3xl font-bold text-red-700"&gt;{absentCount}&lt;/p&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;div className="p-4 bg-slate-50 border-b border-slate-100"&gt;&lt;h3 className="font-bold text-slate-700"&gt;Detalle de Usuarios&lt;/h3&gt;&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;table className="w-full text-left border-collapse"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;tbody className="divide-y divide-slate-100"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                            </span>{users.map(user =&gt; {</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                                </span>const isPresent = attendance[act.id]?.[user.id] || false;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                                </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                                    </span>&lt;tr key={user.id} className="hover:bg-slate-50"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                                        </span>&lt;td className="p-3"&gt;&lt;p className="font-medium text-slate-800"&gt;{user.fullName}&lt;/p&gt;&lt;/td&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                                        </span>&lt;td className="p-3"&gt;&lt;span className={`px-2 py-1 rounded-full text-xs font-semibold shadow-sm ${isPresent ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-white text-slate-500 border border-slate-300'}`}&gt;{isPresent ? 'Presente' : 'Ausente'}&lt;/span&gt;&lt;/td&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                                    </span>&lt;/tr&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                                </span>);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                            </span>})}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                        </span>&lt;/tbody&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                    </span>&lt;/table&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;/&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>)}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>};</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>return (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>{renderNotification()}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;header className="bg-blue-600 text-white p-4 shadow-md sticky top-0 z-10 flex justify-between items-center"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;h1 className="text-xl font-bold flex-1 text-center"&gt;Control de Asistencia&lt;/h1&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/header&gt;</span></p>
+<p class="p2"><span class="s1"><span class="Apple-converted-space">                    </span></span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>{!isOnline &amp;&amp; (</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;div className="bg-yellow-50 text-yellow-700 p-2 text-center text-xs font-medium border-b border-yellow-200 flex items-center justify-center"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                            </span>&lt;IconAlertCircle size={16} className="mr-1"/&gt; Modo Offline (Los datos se guardan solo en este celular/PC)</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>)}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;main className="p-4 max-w-3xl mx-auto"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>{activeTab === 'users' &amp;&amp; renderUsersTab()}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>{activeTab === 'activities' &amp;&amp; renderActivitiesTab()}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>{activeTab === 'attendance' &amp;&amp; renderAttendanceTab()}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>{activeTab === 'reports' &amp;&amp; renderReportsTab()}</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/main&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;nav className="fixed bottom-0 w-full bg-white border-t border-slate-200 flex justify-around items-center p-2 pb-safe z-20 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]"&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;button onClick={() =&gt; setActiveTab('users')} className={`flex flex-col items-center p-2 w-full ${activeTab === 'users' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}&gt;&lt;IconUsers size={24} /&gt;&lt;span className="text-[10px] font-medium mt-1"&gt;Usuarios&lt;/span&gt;&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;button onClick={() =&gt; setActiveTab('activities')} className={`flex flex-col items-center p-2 w-full ${activeTab === 'activities' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}&gt;&lt;IconCalendar size={24} /&gt;&lt;span className="text-[10px] font-medium mt-1"&gt;Actividades&lt;/span&gt;&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;button onClick={() =&gt; setActiveTab('attendance')} className={`flex flex-col items-center p-2 w-full ${activeTab === 'attendance' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}&gt;&lt;IconCheckSquare size={24} /&gt;&lt;span className="text-[10px] font-medium mt-1"&gt;Asistencia&lt;/span&gt;&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                        </span>&lt;button onClick={() =&gt; setActiveTab('reports')} className={`flex flex-col items-center p-2 w-full ${activeTab === 'reports' ? 'text-blue-600' : 'text-slate-400 hover:text-slate-600'}`}&gt;&lt;IconFileText size={24} /&gt;&lt;span className="text-[10px] font-medium mt-1"&gt;Reportes&lt;/span&gt;&lt;/button&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                    </span>&lt;/nav&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">                </span>&lt;/div&gt;</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">            </span>);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>}</span></p>
+<p class="p2"><span class="s1"></span><br></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>const root = ReactDOM.createRoot(document.getElementById('root'));</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">        </span>root.render(&lt;App /&gt;);</span></p>
+<p class="p1"><span class="s1"><span class="Apple-converted-space">    </span>&lt;/script&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/body&gt;</span></p>
+<p class="p1"><span class="s1">&lt;/html&gt;</span></p>
+</body>
+</html>
